@@ -21,4 +21,6 @@ JOURNALS = {
 YEAR_IS_VOL = {
     'JCAP.':2003
 }
+# The root of the output location
+OUTPUT_DIRECTORY = '/tmp/reports'
 

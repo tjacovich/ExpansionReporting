@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from xreport.utils import _get_facet_data
-
+from datetime import datetime
 
 class FullTextReport():
     """
@@ -57,12 +57,13 @@ class FullTextReport():
             raise
         # Initialize statistics data structure
         self.statsdata = {}
-        journals = ['PSJ..','AsBio']
         for journal in journals:
             self.statsdata[journal] = {
                 'pubdata':{},
-                'minyear':0,
-                'maxyear':0,
+                'startyear':0,
+                'lastyear':0,
+                'startvol':0,
+                'lastvol':0,
                 'general':{},
                 'arxiv':{},
                 'publisher':{}
@@ -74,7 +75,40 @@ class FullTextReport():
         else:
             self._get_fulltext_data_classic(journals, 'publisher')
             self._get_fulltext_data_classic(journals, 'arxiv')
-        print(self.statsdata)
+
+    def save_report(self, collection, report_type):
+        """
+        Save the data created in the make_report method in TSV format
+        
+        param: collection: collection to create report for
+        param: report_type: specification of report type
+        """
+        # Where will the report(s) be written to
+        outdir = "{0}/{1}".format(self.config['OUTPUT_DIRECTORY'], report_type)
+        # Make sure the directory exists
+        if not os.path.exists(outdir):
+            os.mkdir(outdir)
+        dstring = datetime.today().strftime('%Y%m%d')
+        output_file = "{0}/fulltext_{1}_{2}.xlsx".format(outdir, collection, dstring)
+        # Transform the data generated in the make_report method:
+        # generate a data structure than can be saved easily into a TSV file
+        outputdata = []
+        journals = sorted(self.statsdata.keys())
+        # Add header rows
+        outputdata.append(['jrnl ->'] + [j for j in journals])
+        outputdata.append(['start year ->'] + [self.statsdata[j]['startyear'] for j in journals])
+        outputdata.append(['last year ->'] + [self.statsdata[j]['lastyear'] for j in journals])
+        outputdata.append(['start vol ->'] + [self.statsdata[j]['startvol'] for j in journals])
+        outputdata.append(['last vol ->'] + [self.statsdata[j]['lastvol'] for j in journals])
+        # 
+        maxvol = max([e['lastvol'] for e in self.statsdata.values()])
+        if report_type == 'NASA':
+            for vol in range(1, maxvol+1):
+                row = [str(vol)] + [self.statsdata[j]['general'].get(vol,"") for j in journals]
+                outputdata.append(row)
+
+        output_frame = pd.DataFrame(outputdata)
+        output_frame.style.applymap(self._highlight_cells).to_excel(output_file, engine='openpyxl', index=False, header=False)
         
 
     def _get_publication_data(self, journals):
@@ -92,8 +126,11 @@ class FullTextReport():
             year_dict = _get_facet_data(self.config, query, 'year')
             # Update journal statistics
             # The first and most recent publication years
-            self.statsdata[journal]['maxyear'] = max(year_dict.keys())
-            self.statsdata[journal]['minyear'] = min(year_dict.keys())
+            self.statsdata[journal]['lastyear'] = max(year_dict.keys())
+            self.statsdata[journal]['startyear'] = min(year_dict.keys())
+            # The first and most recent volumes
+            self.statsdata[journal]['lastvol'] = max(art_dict.keys())
+            self.statsdata[journal]['startvol'] = min(art_dict.keys())
             # The number of publications per volume, to be used later
             # for normalization
             self.statsdata[journal]['pubdata'] = art_dict
@@ -113,7 +150,7 @@ class FullTextReport():
                     frac = 100*float(full_dict[volume])/float(self.statsdata[journal]['pubdata'][volume])
                 except:
                     frac = 0.0
-                cov_dict[volume] = str(round(frac,1))
+                cov_dict[volume] = round(frac,1)
             self.statsdata[journal]['general'] = cov_dict
 
     def _get_fulltext_data_classic(self, journals, source):
@@ -140,5 +177,19 @@ class FullTextReport():
                     frac = 100*float(len(sources))/float(self.statsdata[journal]['pubdata'][volume])
                 except:
                     frac = 0.0
-                cov_dict[volume] = str(round(frac,1))
+                cov_dict[volume] = round(frac,1)
             self.statsdata[journal][source] = cov_dict
+
+    def _highlight_cells(self, val):
+        try:
+            if val >= 90:
+                color = '#6aa84f'
+            elif val <= 60:
+                color = '#f4cccc'
+            elif val > 60 and val <=70:
+                color = '#ffe599'
+            else:
+                color = '#cfe2f3'
+        except:
+            color = '#ffffff'
+        return 'background-color: {}'.format(color)

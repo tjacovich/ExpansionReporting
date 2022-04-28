@@ -54,7 +54,18 @@ def create_report(**args):
     collection = args['collection']
     #
     ftreport = FullTextReport()
-    ftstats = ftreport.make_report(collection, report_format)
+    try:
+        ftreport.make_report(collection, report_format)
+    except Exception as err:
+        msg = "Error making full text report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
+        print(msg)
+        logger.error(msg)
+    try:
+        ftreport.save_report(collection, report_format)
+    except Exception as err:
+        msg = "Error saving full text report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
+        print(msg)
+        logger.error(msg)
     
         
         
