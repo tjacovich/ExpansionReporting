@@ -11,7 +11,8 @@ class FullTextReport():
     def __init__(self):
         """
         Initializes the class and prepares a (temporary) lookup facility for
-        curators reporting
+        curators reporting. This lookup facility will be replaced by an API
+        query eventually
         """
         # ============================= INITIALIZATION ==================================== #
         from adsputils import setup_logging, load_config
@@ -22,8 +23,14 @@ class FullTextReport():
                                 attach_stdout=self.config.get('LOG_STDOUT', False))
         # ============================= MAIN FUNCTIONALITY ================================ #
         fulltext_links = self.config.get("CLASSIC_FULLTEXT_INDEX")
+        # Compile a lit of journals to generate the lookup facility for
         include = [element for sublist in self.config.get("JOURNALS").values() for element in sublist]
+        # This variable will hold the data to generate the Pandas frame
         data = []
+        # Gather all required data. The Pandas data frame will allow the following query:
+        # provide all full text sources for a given journal and volume combination, from which will
+        # follow how many records have full text from arXiv and how many from the publisher (which
+        # are the numbers we are after)
         with open(fulltext_links) as fh:
             for line in fh:
                 bibcode, ftfile, source = line.strip().split('\t')
@@ -49,6 +56,7 @@ class FullTextReport():
         param: collection: collection to create report for
         param: report_type: specification of report type
         """
+        # Which journals (i.e. bibstems) make up the collection under consideration
         try:
             journals = self.config['JOURNALS'][collection]
         except Exception as err:
@@ -70,6 +78,8 @@ class FullTextReport():
             }
         # Update statistics data structure with general publication information
         self._get_publication_data(journals)
+        # Different report types result in different reports. Specifically, for full text,
+        # for external reporting only the fact that there is full text is reported.
         if report_type == "NASA":
             self._get_fulltext_data_general(journals)
         else:
@@ -78,7 +88,7 @@ class FullTextReport():
 
     def save_report(self, collection, report_type):
         """
-        Save the data created in the make_report method in TSV format
+        Save the data created in the make_report method in Excel format
         
         param: collection: collection to create report for
         param: report_type: specification of report type
@@ -88,10 +98,10 @@ class FullTextReport():
         # Make sure the directory exists
         if not os.path.exists(outdir):
             os.mkdir(outdir)
+        # The names of output files will have a date string in them
         dstring = datetime.today().strftime('%Y%m%d')
-        output_file = "{0}/fulltext_{1}_{2}.xlsx".format(outdir, collection, dstring)
         # Transform the data generated in the make_report method:
-        # generate a data structure than can be saved easily into a TSV file
+        # generate a data structure so that we can create a Pandas frame
         outputdata = []
         journals = sorted(self.statsdata.keys())
         # Add header rows
@@ -103,13 +113,23 @@ class FullTextReport():
         # 
         maxvol = max([e['lastvol'] for e in self.statsdata.values()])
         if report_type == 'NASA':
+            # Generate the name of the output file, including full path
+            output_file = "{0}/fulltext_{1}_{2}.xlsx".format(outdir, collection, dstring)
             for vol in range(1, maxvol+1):
                 row = [str(vol)] + [self.statsdata[j]['general'].get(vol,"") for j in journals]
                 outputdata.append(row)
-
-        output_frame = pd.DataFrame(outputdata)
-        output_frame.style.applymap(self._highlight_cells).to_excel(output_file, engine='openpyxl', index=False, header=False)
-        
+            output_frame = pd.DataFrame(outputdata)
+            output_frame.style.applymap(self._highlight_cells).to_excel(output_file, engine='openpyxl', index=False, header=False)
+        else:
+            # For internal reporting we generate two reports, corresponding with two
+            # full text sources: publisher and arXiv
+            for ft_source in ['publisher', 'arxiv']:
+                output_file = "{0}/fulltext_{1}_{2}.xlsx".format(outdir, collection, dstring)
+                for vol in range(1, maxvol+1):
+                    row = [str(vol)] + [self.statsdata[j][ft_source].get(vol,"") for j in journals]
+                    outputdata.append(row)
+                output_frame = pd.DataFrame(outputdata)
+                output_frame.style.applymap(self._highlight_cells).to_excel(output_file, engine='openpyxl', index=False, header=False)
 
     def _get_publication_data(self, journals):
         """
@@ -137,7 +157,7 @@ class FullTextReport():
 
     def _get_fulltext_data_general(self, journals):
         """
-        For a set of journals, get full text data
+        For a set of journals, get full text data (the number of records with full text per volume)
         
         :param journals: list of full bibstems
         """
@@ -181,6 +201,10 @@ class FullTextReport():
             self.statsdata[journal][source] = cov_dict
 
     def _highlight_cells(self, val):
+        """
+        Mapping function for use in Pandas to apply conditional cell coloring
+        when writing data to Excel
+        """
         try:
             if val >= 90:
                 color = '#6aa84f'
