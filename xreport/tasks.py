@@ -5,10 +5,8 @@ from builtins import str
 import csv
 from datetime import datetime
 import xreport.app as app_module
-#from xreport.utils import _get_record_stats
-#from xreport.utils import _get_fulltext_stats
-#from xreport.utils import _get_references_stats
-from xreport.fulltext import FullTextReport
+from xreport.reports import FullTextReport
+from xreport.reports import ReferenceMatchingReport
 # ============================= INITIALIZATION ==================================== #
 
 from adsputils import setup_logging, load_config
@@ -23,23 +21,40 @@ def create_report(**args):
     report_format = args['format']
     # For which collection are we generating the report
     collection = args['collection']
-    # Initialize the class for full text reporting
-    ftreport = FullTextReport()
-    # The first step consists of retrieving and preparing the data to generate the report
-    try:
-        ftreport.make_report(collection, report_format)
-    except Exception as err:
-        msg = "Error making full text report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
-        print(msg)
-        logger.error(msg)
-    # Write the report to file
-    try:
-        ftreport.save_report(collection, report_format)
-    except Exception as err:
-        msg = "Error saving full text report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
-        print(msg)
-        logger.error(msg)
-    
-        
+    # What report needs to be created
+    subject = args['subject']
+    #
+    if subject in ['FULLTEXT', 'ALL']:
+        # Initialize the class for full text reporting
+        ftreport = FullTextReport()
+        # The first step consists of retrieving and preparing the data to generate the report
+        try:
+            ftreport.make_report(collection, report_format)
+        except Exception as err:
+            msg = "Error making full text report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
+            logger.error(msg)
+        # Write the report to file
+        try:
+            ftreport.save_report(collection, report_format, subject)
+        except Exception as err:
+            msg = "Error saving full text report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
+            logger.error(msg)
+    if subject in ['REFERENCES', 'ALL']:
+        # Initialize the class for reference matching reporting
+        rmreport = ReferenceMatchingReport()
+        try:
+            rmreport.make_report(collection, report_format)
+        except Exception as err:
+            msg = "Error making reference matching report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
+            logger.error(msg)
+        # Write the report to file
+        try:
+            rmreport.save_report(collection, report_format, subject)
+        except Exception as err:
+            msg = "Error saving reference matching report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
+            print(msg)
+            logger.error(msg)
+#    if subject == 'SUMMARY':
+#        # Create a summarizing report
         
         

@@ -5,19 +5,27 @@ LOG_STDOUT = False
 ADS_API_TOKEN = "<secret>"
 ADS_API_URL = "https://ui.adsabs.harvard.edu/v1"
 CLASSIC_FULLTEXT_INDEX = "/tmp/all.links"
+ADS_REFERENCE_DATA = "/references/resolved"
 # ============================= APPLICATION ==================================== #
 # 
 # Collections we are reporting on
-COLLECTIONS = ['AST', 'PS+HP']
+COLLECTIONS = ['AST', 'PS+HP', 'TEST']
 # Report formats supported
-FORMATS = ['NASA', 'CURATORS']
+FORMATS = ['NASA', 'CURATORS', 'SUMMARY']
+# Report types supported
+SUBJECTS = ['FULLTEXT', 'REFERENCES']
 # Which journals are we reporting on per collection
 JOURNALS = {
     'AST': ["ApJ..","ApJL","ApJS.","AJ...","MNRAS","A&A..","A&AS.","PASP.","AN...","PhRvD","JCAP.","APh..","CQGra"],
     'PS+HP': ["AREPS","ASTRA","AdSpR","AnGeo","Ap&SS","AsBio","CeMDA","E&PSL","EM&P.","GeCoA","IJAsB","Icar.","JAtS.","JGRA.","JGRD.",
-              "JGRE.","M&PS.","M&PSA","Metic","NatGe","P&SS.","PEPI.","RvGeo","SSRv.","SoSyR","SoPh.","SpWea","PSJ..","Moon."]
+              "JGRE.","M&PS.","M&PSA","Metic","NatGe","P&SS.","PEPI.","RvGeo","SSRv.","SoSyR","SoPh.","SpWea","PSJ..","Moon."],
+    'TEST': ['AsBio','Icar.']
 } 
 
+SOURCES = {
+    'FULLTEXT': ['publisher','arxiv'],
+    'REFERENCES': ['publisher', 'crossref']
+}
 YEAR_IS_VOL = {
     'JCAP.':2003
 }

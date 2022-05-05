@@ -25,15 +25,19 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--collection', default='PS+HP', dest='collection',
                         help='Collection to create report for (accepted values: AST or PS+HP)')
     parser.add_argument('-f', '--format', default='CURATORS', dest='format',
-                        help='Format of report (accepted)')
+                        help='Format of report')
+    parser.add_argument('-s', '--subject', default='ALL', dest='subject',
+                        help='Subject of the report')
     args = parser.parse_args()
-    
+
     if args.collection not in config.get('COLLECTIONS'):
         sys.exit('Please specify one of the following values for the collection parameter: {}'.format(config.get('COLLECTIONS')))
     if args.format not in config.get('FORMATS'):
         sys.exit('Please specify one of the following values for the format parameter: {}'.format(config.get('FORMATS')))
+    if args.subject not in config.get('SUBJECTS'):
+        sys.exit('Please specify one of the following values for the subject parameter: {}'.format(config.get('SUBJECTS')))
     try:
-        report = tasks.create_report(collection=args.collection, format=args.format)
+        report = tasks.create_report(collection=args.collection, format=args.format, subject=args.subject)
     except Exception as error:
-#        logger.error('Creating "{0}" report on collection "{1}" failed: {2}'.format(args.target, args.collection, error))
-        sys.exit('Creating "{0}" report on collection "{1}" failed: {2}'.format(args.format, args.collection, error))
+        logger.error('Creating "{0}" report for "{1}" on collection "{2}" failed: {3}'.format(args.subject, args.format, args.collection, error))
+        sys.exit('Creating "{0}" report for "{1}" on collection "{2}" failed: {3}'.format(args.subject, args.format, args.collection, error))
