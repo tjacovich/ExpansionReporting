@@ -89,12 +89,12 @@ class Report(object):
             # Results are written to an Excel file with conditional formatting and first row and column frozen
             output_frame.style.applymap(self._highlight_cells).to_excel(output_file, engine='openpyxl', index=False, header=False, freeze_panes=(1,1))
         else:
-            outputdata = header
             # For internal reporting we generate two reports, corresponding with 
             # the sources associated with the type data in the report
             # For each of these sources the processing is the same as above
             for source in self.config['SOURCES'][subject]:
                 outputdata = []
+                outputdata += header
                 output_file = "{0}/{1}_{2}_{3}_{4}.xlsx".format(outdir, subject.lower(), source, collection, self.dstring)
                 for vol in range(1, maxvol+1):
                     row = [str(vol)] + [self.statsdata[j][source].get(vol,"") for j in self.journals]
@@ -198,7 +198,7 @@ class FullTextReport(Report):
         else:
             self._get_fulltext_data_classic('publisher')
             self._get_fulltext_data_classic('arxiv')
-    #
+
     def save_report(self, collection, report_type, subject):
         """
         Save the data created in the make_report method in Excel format
@@ -230,7 +230,7 @@ class FullTextReport(Report):
             # Update the global statistics data structure
             self.statsdata[journal]['general'] = cov_dict
 
-    def _get_fulltext_data_classic(self, source):
+    def _get_fulltext_data_classic(self, ft_source):
         """
         For a set of journals, get full text data from Classic
         Note: this method will be replaced by API calls once Solr has been updated
@@ -242,7 +242,7 @@ class FullTextReport(Report):
             cov_dict = {}
             for volume in sorted(self.statsdata[journal]['pubdata'].keys()):
                 # For each volume of the journals in the collection we query the Pandas dataframe to retrieve the sources of full text
-                if source == 'arxiv':
+                if ft_source == 'arxiv':
                     # How many records are there with full text from arXiv?
                     data = self.ft_index.query("bibstem=='{0}' and volume=={1} and source=='arxiv'".format(journal, volume))
                 else:
@@ -257,7 +257,7 @@ class FullTextReport(Report):
                 except:
                     frac = 0.0
                 cov_dict[volume] = round(frac,1)
-            self.statsdata[journal][source] = cov_dict
+            self.statsdata[journal][ft_source] = cov_dict
 
 class ReferenceMatchingReport(Report):
     """
@@ -358,3 +358,14 @@ class ReferenceMatchingReport(Report):
                         else:
                             continue
         return [ok, fail]
+
+class SummaryReport(Report):
+    """
+
+    """
+    def __init__(self):
+        """
+        Initializes the class
+        """
+        super(SummaryReport, self).__init__()
+        #

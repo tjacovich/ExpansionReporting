@@ -19,9 +19,13 @@ JOURNALS = {
     'AST': ["ApJ..","ApJL","ApJS.","AJ...","MNRAS","A&A..","A&AS.","PASP.","AN...","PhRvD","JCAP.","APh..","CQGra"],
     'PS+HP': ["AREPS","ASTRA","AdSpR","AnGeo","Ap&SS","AsBio","CeMDA","E&PSL","EM&P.","GeCoA","IJAsB","Icar.","JAtS.","JGRA.","JGRD.",
               "JGRE.","M&PS.","M&PSA","Metic","NatGe","P&SS.","PEPI.","RvGeo","SSRv.","SoSyR","SoPh.","SpWea","PSJ..","Moon."],
-    'TEST': ['AsBio','Icar.']
+    'HP': ['SoPh.','SpWea'],
+    'TEST': ['ApJ..']
 } 
-
+CONTENT_QUERIES = {
+    'HP recent sample':'keyword:"sun*" collection:astronomy year:[2010 TO *] doctype:article',
+    'PS recent sample':'keyword:(planets* OR "solar sytem*" OR comet* OR meteor* OR kuiper* OR asteroid* OR TNO) year:[2010 TO *] collection:astronomy',
+}
 SOURCES = {
     'FULLTEXT': ['publisher','arxiv'],
     'REFERENCES': ['publisher', 'crossref']

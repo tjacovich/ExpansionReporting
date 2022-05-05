@@ -7,6 +7,7 @@ from datetime import datetime
 import xreport.app as app_module
 from xreport.reports import FullTextReport
 from xreport.reports import ReferenceMatchingReport
+from xreport.reports import SummaryReport
 # ============================= INITIALIZATION ==================================== #
 
 from adsputils import setup_logging, load_config
@@ -54,7 +55,8 @@ def create_report(**args):
             msg = "Error saving reference matching report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
             print(msg)
             logger.error(msg)
-#    if subject == 'SUMMARY':
-#        # Create a summarizing report
+    if subject == 'SUMMARY':
+        # Create a summarizing report
+        summary = SummaryReport()
         
         
