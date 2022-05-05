@@ -73,7 +73,7 @@ def _get_facet_data(conf, query_string, facet):
 def _get_records(app, query_string, return_fields):
     start = 0
     rows = 10
-    bibcodes = []
+    results = []
     params = {
         'q':query_string,
         'fl': return_fields,
@@ -82,7 +82,7 @@ def _get_records(app, query_string, return_fields):
     }
     data = _do_query(app, params)
     try:
-        bibcodes = data['response']['docs']
+        results = data['response']['docs']
     except:
         raise Exception('Solr returned unexpected data!')
     num_documents = int(data['response']['numFound'])
@@ -92,80 +92,8 @@ def _get_records(app, query_string, return_fields):
         params['start'] = start
         data = do_query(app, params)
         try:
-            bibcodes += data['response']['docs']
+            results += data['response']['docs']
         except:
             raise Exception('Solr returned unexpected data!')
         start += rows
     return bibcodes
-
-def get_ft_files(biblist):
-    ftmap = {}
-    for b in biblist:
-        ftmap[b] = ''
-        try:
-            for entry in ftlooker(b).strip().split('\n'):
-                ftmap[b] = entry.split('\t')[2].lower()
-        except:
-            pass
-    return ftmap
-
-def _get_fulltext_numbers(app, journal, volumes, source):
-    
-    for volume in volumes:
-        # First, get the bibcodes for the journal being processed
-        query = 'bibstem:"{0}" volume:{1} -title:erratum doctype:article'.format(journal, volume)
-        data = _get_records(app, query, 'bibcode')
-        try:
-            bibcodes = [r['bibcode'] for r in res]
-        except:
-            bibcodes = []
-        try:
-            ft_data = _get_ft_files(bibcodes)
-        except:
-            ft_data = {}
-
-def _get_fulltext_stats(app, source, journals):
-    stats = {}
-    for journal in journals:
-        # First get the number of records per volume
-        query = 'bibstem:"{0}" doctype:article'.format(journal)
-        # Get the data using a facet query
-        art_dict = _get_facet_data(app, query, 'volume')
-        # Also, get the number of records per year
-        year_dict = _get_facet_data(app, query, 'year')
-        # The most recent publication year for the journal being processed
-        maxyear = max(year_dict.keys())
-        # The first and last volume for journal being processed
-        maxvol = max(art_dict.keys())
-        minvol = min(art_dict.keys())
-        if source == 'general':
-            # Get the number of records with full text per volume from ADS API
-            query = 'bibstem:"{0}" doctype:article fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *]'.format(j)
-            full_dict = _get_facet_data(app, query, 'volume')
-            # All necessary data has now been collected to generate the report
-            coverage = [""]*(maxvol + 1)
-            for vol in sorted(art_dict.keys()):
-                try:
-                    frac = 100*float(full_dict[vol])/float(art_dict[vol])
-                except:
-                    frac = 0.0
-                coverage[vol] = str(round(frac,1))
-            stats[journal] = {
-                'maxyear': maxyear,
-                'maxvol': maxvol,
-                'minvol': minvol,
-                'general': coverage
-            }
-        elif source == 'arxiv':
-            # Get the number of records with full text per volume from ADS back office
-            full_dict = _get_fulltext_numbers(app, journal, sorted(art_dict.keys()), source)
-            
-
-def _save_results(datadir, results, topic):
-    ofile = "{0}/{1}_{2}.tsv".format(datadir, topic, dstring)
-    with open(ofile, 'w') as f_output:
-        for entry in results:
-            try:
-                f_output.write('\t'.join(entry) + '\n')
-            except:
-                sys.exit('Error writing to {0}: {1}\n'.format(ofile, entry))
