@@ -477,7 +477,7 @@ class SummaryReport(Report):
             citnum = _get_citations(self.config, query)
             self.summarydata[collection]['citnum'] = citnum
             # Get the number of recent citations (i.e. current year) via facet query
-            q = 'citations(bibstem:({0})) year:{1}'.format(" OR ".join(journals), today.year)
+            q = 'citations({0}) year:{1}'.format(query, today.year)
             results = _get_facet_data(self.config, q, 'year')
             self.summarydata[collection]['recent_citnum'] = results.get(today.year,0)
             # Get usage numbers (via Classic index files), first reads, then downloads
