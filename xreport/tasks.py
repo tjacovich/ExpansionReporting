@@ -2,8 +2,6 @@ from __future__ import absolute_import, unicode_literals
 import os
 import sys
 from builtins import str
-import csv
-from datetime import datetime
 import xreport.app as app_module
 from xreport.reports import FullTextReport
 from xreport.reports import ReferenceMatchingReport
@@ -53,10 +51,19 @@ def create_report(**args):
             rmreport.save_report(collection, report_format, subject)
         except Exception as err:
             msg = "Error saving reference matching report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
-            print(msg)
             logger.error(msg)
     if subject == 'SUMMARY':
         # Create a summarizing report
         summary = SummaryReport()
+        try:
+            summary.make_report(collection, report_format, subject)
+        except Exception as err:
+            msg = "Error making summary report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
+            logger.error(msg)
+        try:
+            summary.save_report(collection, report_format, subject)
+        except Exception as err:
+            msg = "Error saving summary report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
+            logger.error(msg)
         
         
