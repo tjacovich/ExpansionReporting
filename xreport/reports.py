@@ -1,8 +1,13 @@
 import pandas as pd
 import os
+import sys
 import glob
 from xreport.utils import _get_facet_data
+from xreport.utils import _get_citations
+from xreport.utils import _get_usage
+from xreport.utils import _get_records
 from datetime import datetime
+from datetime import date
 
 class Report(object):
     """
@@ -50,6 +55,36 @@ class Report(object):
                 'publisher':{},
                 'crossref':{}
             }
+        # Initialize summary data structure
+        self.summarydata = {}
+        for collection in self.config['COLLECTIONS']:
+            self.summarydata[collection] = {
+                'nrecs':0, # number of records
+                'ftrecs':0, # number of records with full text
+                'refrecs':0, # number of refereed records
+                'oarecs':0, # number Open Access records
+                'dlrecs':0, # number of records with data link(s)
+                'citnum':0, # total number of citations
+                'recent_citnum':0, # total number of recent citations
+                'reads':'NA', # total number of reads
+                'recent_reads':'NA', # total number of recent reads
+                'downloads':'NA', # total number of downloads
+                'recent_downloads':'NA', # total number of recent downloads
+            }
+        for collection in self.config['CONTENT_QUERIES'].keys():
+            self.summarydata["{0} recent sample".format(collection)] = {
+                'nrecs':0, # number of records
+                'ftrecs':0, # number of records with full text
+                'refrecs':0, # number of refereed records
+                'oarecs':0, # number Open Access records
+                'dlrecs':0, # number of records with data link(s)
+                'citnum':0, # total number of citations
+                'recent_citnum':0, # total number of recent citations
+                'reads':0, # total number of reads
+                'recent_reads':0, # total number of recent reads
+                'downloads':0, # total number of downloads
+                'recent_downloads':0, # total number of recent downloads
+            }
         # Update statistics data structure with general publication information
         self._get_publication_data()
 
@@ -78,7 +113,8 @@ class Report(object):
         #
         maxvol = max([e['lastvol'] for e in self.statsdata.values()])
         if report_type == 'NASA':
-            outputdata = header
+            outputdata = []
+            outputdata += header
             # Generate the name of the output file, including full path
             output_file = "{0}/{1}_{2}_{3}.xlsx".format(outdir, subject.lower(), collection, self.dstring)
             # Statistics are reported per volume for each journal in the collection
@@ -89,12 +125,12 @@ class Report(object):
             # Results are written to an Excel file with conditional formatting and first row and column frozen
             output_frame.style.applymap(self._highlight_cells).to_excel(output_file, engine='openpyxl', index=False, header=False, freeze_panes=(1,1))
         else:
-            outputdata = header
             # For internal reporting we generate two reports, corresponding with 
             # the sources associated with the type data in the report
             # For each of these sources the processing is the same as above
             for source in self.config['SOURCES'][subject]:
                 outputdata = []
+                outputdata += header
                 output_file = "{0}/{1}_{2}_{3}_{4}.xlsx".format(outdir, subject.lower(), source, collection, self.dstring)
                 for vol in range(1, maxvol+1):
                     row = [str(vol)] + [self.statsdata[j][source].get(vol,"") for j in self.journals]
@@ -198,7 +234,7 @@ class FullTextReport(Report):
         else:
             self._get_fulltext_data_classic('publisher')
             self._get_fulltext_data_classic('arxiv')
-    #
+
     def save_report(self, collection, report_type, subject):
         """
         Save the data created in the make_report method in Excel format
@@ -230,7 +266,7 @@ class FullTextReport(Report):
             # Update the global statistics data structure
             self.statsdata[journal]['general'] = cov_dict
 
-    def _get_fulltext_data_classic(self, source):
+    def _get_fulltext_data_classic(self, ft_source):
         """
         For a set of journals, get full text data from Classic
         Note: this method will be replaced by API calls once Solr has been updated
@@ -242,7 +278,7 @@ class FullTextReport(Report):
             cov_dict = {}
             for volume in sorted(self.statsdata[journal]['pubdata'].keys()):
                 # For each volume of the journals in the collection we query the Pandas dataframe to retrieve the sources of full text
-                if source == 'arxiv':
+                if ft_source == 'arxiv':
                     # How many records are there with full text from arXiv?
                     data = self.ft_index.query("bibstem=='{0}' and volume=={1} and source=='arxiv'".format(journal, volume))
                 else:
@@ -257,7 +293,7 @@ class FullTextReport(Report):
                 except:
                     frac = 0.0
                 cov_dict[volume] = round(frac,1)
-            self.statsdata[journal][source] = cov_dict
+            self.statsdata[journal][ft_source] = cov_dict
 
 class ReferenceMatchingReport(Report):
     """
@@ -275,6 +311,10 @@ class ReferenceMatchingReport(Report):
         super(ReferenceMatchingReport, self).__init__()
         #
     def make_report(self, collection, report_type):
+        """
+        param: collection: collection of publications to create report for
+        param: report_type: specification of report type
+        """
         super(ReferenceMatchingReport, self).make_report(collection, report_type)
         # ============================= AUGMENTATION of parent method ================================ #
         # Different report types result in different reports.
@@ -314,12 +354,16 @@ class ReferenceMatchingReport(Report):
                     frac = 0.0
                 cov_dict[volume] = round(frac,1)
             self.statsdata[journal][rtype] = cov_dict
-    #
+
     def _process_one_volume(self, jrnl, volno, source):
         """
         For a particular volume of a given journal, find the results files generated
         by the reference resolver and tally how many references were successfully and
         not successfully matched to ADS records
+        
+        param: jrnl: bibstem
+        param: volno: journal volume number
+        param: source: source of reference data
         """
         # Root directory for reference data
         basedir = self.config['ADS_REFERENCE_DATA']
@@ -346,6 +390,8 @@ class ReferenceMatchingReport(Report):
             resfiles = [f for f in resfiles if f.endswith('.xref.xml.result')]
         fail = ok =  0
         # Now go through all the resolver results files
+        # Every entry in the results files has a score of 0 or 5, if no match was found,
+        # or 1, if a match was found successfully
         for resfile in resfiles:
             with open(resfile) as refdata:
                 for line in refdata:
@@ -358,3 +404,159 @@ class ReferenceMatchingReport(Report):
                         else:
                             continue
         return [ok, fail]
+
+class SummaryReport(Report):
+    """
+    Create summary report for a specific target audience
+    """
+    def __init__(self):
+        """
+        Initializes the class
+        """
+        super(SummaryReport, self).__init__()
+
+    def make_report(self, collection, report_type, subject):
+        """
+        param: collection: collection of publications to create report for
+        param: report_type: specification of report type
+        param: subject: specification of type data to create report for
+        """
+        super(SummaryReport, self).make_report(collection, report_type)
+        # ============================= AUGMENTATION of parent method ================================ #
+        self._get_summary_stats(report_type)
+
+    def save_report(self, collection, report_type, subject):
+        """
+        Save the data created in the make_report method in Excel format
+        
+        param: collection: collection of publications to create report for
+        param: report_type: specification of report type
+        param: subject: specification of type data to create report for
+        """
+        # Where will the report(s) be written to
+        outdir = "{0}/{1}".format(self.config['OUTPUT_DIRECTORY'], report_type)
+        # Make sure the directory exists
+        if not os.path.exists(outdir):
+            os.mkdir(outdir)
+        # Transform the data generated in the make_report method:
+        # generate a data structure so that we can create a Pandas frame
+        header = []
+        # Add header rows
+        header.append(['collection'] + [m for m in self.summarydata['PS'].keys()])
+        #
+        if report_type == 'NASA':
+            outputdata = []
+            outputdata += header
+            # Generate the name of the output file, including full path
+            output_file = "{0}/{1}_{2}.xlsx".format(outdir, subject.lower(), self.dstring)
+            # Statistics are reported per volume for each journal in the collection
+            for collection in self.summarydata.keys() :
+                row = [collection] + [v for v in self.summarydata[collection].values()]
+                outputdata.append(row)
+            output_frame = pd.DataFrame(outputdata)
+            # Results are written to an Excel file with conditional formatting and first row and column frozen
+            output_frame.style.to_excel(output_file, engine='openpyxl', index=False, header=False, freeze_panes=(1,1))
+
+    def _get_summary_stats(self, report_type):
+        """
+        For a set of journals, get some basic publication data
+        
+        param: report_type: specification of report type
+        """
+        today = date.today()
+        for collection in self.config['COLLECTIONS']:
+            # Retrieve the journals for the collection being processed
+            journals = self.config['JOURNALS'][collection]
+            # Construct the query to retrieve all records for these journals
+            query = 'bibstem:({0})'.format(" OR ".join(journals))
+            # Do we have an special filter for this collection?
+            cfilter = self.config['COLLECTION_FILTERS'].get(collection, None)
+            if cfilter:
+                query += " {0}".format(cfilter)
+            # Get the total number of citations (via pivot query)
+            citnum = _get_citations(self.config, query)
+            self.summarydata[collection]['citnum'] = citnum
+            # Get the number of recent citations (i.e. current year) via facet query
+            q = 'citations({0}) year:{1}'.format(query, today.year)
+            results = _get_facet_data(self.config, q, 'year')
+            self.summarydata[collection]['recent_citnum'] = results.get(today.year,0)
+            # Get usage numbers (via Classic index files), first reads, then downloads
+            if collection not in self.config['SKIP_USAGE']:
+                reads, recent_reads = _get_usage(self.config, jrnls=journals)
+                self.summarydata[collection]['reads'] = reads
+                self.summarydata[collection]['recent_reads'] = recent_reads
+                downl, recent_downl = _get_usage(self.config, jrnls=journals, udata='downloads')
+                self.summarydata[collection]['downloads'] = downl
+                self.summarydata[collection]['recent_downloads'] = recent_downl
+            # Get the total number of records via facet query on publication year
+            results = _get_facet_data(self.config, query, 'year')
+            self.summarydata[collection]['nrecs'] = sum(results.values())
+            # How many of these records have full text associated with them
+            query = 'bibstem:({0}) fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *]'.format(" OR ".join(journals))
+            if cfilter:
+                query += " {0}".format(cfilter)
+            results = _get_facet_data(self.config, query, 'year')
+            self.summarydata[collection]['ftrecs'] = sum(results.values())
+            # How many of these records are Open Access
+            query = 'bibstem:({0}) property:openaccess'.format(" OR ".join(journals))
+            if cfilter:
+                query += " {0}".format(cfilter)
+            results = _get_facet_data(self.config, query, 'year')
+            self.summarydata[collection]['oarecs'] = sum(results.values())
+            # How many of these records have at least one data link
+            query = 'bibstem:({0}) property:data'.format(" OR ".join(journals))
+            if cfilter:
+                query += " {0}".format(cfilter)
+            results = _get_facet_data(self.config, query, 'year')
+            self.summarydata[collection]['dlrecs'] = sum(results.values())
+            # How many of these records are refereed
+            query = 'bibstem:({0}) property:refereed'.format(" OR ".join(journals))
+            if cfilter:
+                query += " {0}".format(cfilter)
+            results = _get_facet_data(self.config, query, 'year')
+            self.summarydata[collection]['refrecs'] = sum(results.values())
+        for collection in self.config['CONTENT_QUERIES'].keys():
+            # Do the same as above for "content queries". These queries are supposed to retrieve
+            # sets of recent records representative for each collection, but going beyond just the
+            # journals
+            journals = self.config['JOURNALS'][collection]
+            label = "{0} recent sample".format(collection)
+            jq = 'bibstem:({0})'.format(" OR ".join(journals))
+            # Do we have an special filter for this collection?
+            cfilter = self.config['COLLECTION_FILTERS'].get(collection, None)
+            if cfilter:
+                jq += " {0}".format(cfilter)
+            cq = "({0} OR references({1}) OR citations({2}))".format(jq, jq, jq)
+            query = self.config['CONTENT_QUERIES'][collection].format(cq)
+            # Get the citation numbers
+            citnum = _get_citations(self.config, query)
+            self.summarydata[label]['citnum'] = citnum
+            q = "citations({0}) year:{1}".format(query, today.year)
+            results = _get_facet_data(self.config, q, 'year')
+            self.summarydata[label]['recent_citnum'] = results.get(today.year,0)
+            # Get usage numbers
+            # Currently there is no efficient way to retrieve usage data for large sets
+            # of individual records
+            self.summarydata[label]['reads'] = "NA"
+            self.summarydata[label]['recent_reads'] = "NA"
+            self.summarydata[label]['downloads'] = "NA"
+            self.summarydata[label]['recent_downloads'] = "NA"
+            # Get the total number of records via facet query on publication year
+            results = _get_facet_data(self.config, query, 'year')
+            self.summarydata[label]['nrecs'] = sum(results.values())
+            # How many of these records have full text associated with them
+            q = '{0} fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *]'.format(query)
+            results = _get_facet_data(self.config, q, 'year')
+            self.summarydata[label]['ftrecs'] = sum(results.values())
+            # How many of these records are Open Access
+            q = '{0} property:openaccess'.format(query)
+            results = _get_facet_data(self.config, q, 'year')
+            self.summarydata[label]['oarecs'] = sum(results.values())
+            # How many of these records have at least one data link
+            q = '{0} property:data'.format(query)
+            results = _get_facet_data(self.config, q, 'year')
+            self.summarydata[label]['dlrecs'] = sum(results.values())
+            # How many of these records are refereed
+            q = '{0} property:refereed'.format(query)
+            results = _get_facet_data(self.config, q, 'year')
+            self.summarydata[label]['refrecs'] = sum(results.values())

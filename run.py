@@ -22,9 +22,9 @@ logger = setup_logging('run.py', proj_home=proj_home,
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--collection', default='PS+HP', dest='collection',
+    parser.add_argument('-c', '--collection', default='AST', dest='collection',
                         help='Collection to create report for (accepted values: AST or PS+HP)')
-    parser.add_argument('-f', '--format', default='CURATORS', dest='format',
+    parser.add_argument('-f', '--format', default='NASA', dest='format',
                         help='Format of report')
     parser.add_argument('-s', '--subject', default='ALL', dest='subject',
                         help='Subject of the report')
