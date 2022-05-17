@@ -56,7 +56,7 @@ def create_report(**args):
         # Create a summarizing report
         summary = SummaryReport()
         try:
-            summary.make_report(collection, report_format, subject)
+            summary.make_report(collection, report_format)
         except Exception as err:
             msg = "Error making summary report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
             logger.error(msg)

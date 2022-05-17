@@ -11,7 +11,6 @@ from adsputils import setup_logging, load_config
 
 proj_home = os.path.realpath(os.path.join(os.path.dirname(__file__), '../'))
 config = load_config(proj_home=proj_home)
-#app = app_module.xreport('ads-expansion-reporting', proj_home=proj_home, local_config=globals().get('local_config', {}))
 logger = setup_logging(__name__, proj_home=proj_home,
                         level=config.get('LOGGING_LEVEL', 'INFO'),
                         attach_stdout=config.get('LOG_STDOUT', False))
