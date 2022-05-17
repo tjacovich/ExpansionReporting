@@ -13,7 +13,7 @@ class Report(object):
     """
 
     """
-    def __init__(self):
+    def __init__(self, config={}):
         """
         Initializes the class
         """
@@ -21,6 +21,8 @@ class Report(object):
         from adsputils import setup_logging, load_config
         proj_home = os.path.realpath(os.path.join(os.path.dirname(__file__), '../'))
         self.config = load_config(proj_home=proj_home)
+        if config:
+            self.config = {**self.config, **config}
         self.logger = setup_logging(__name__, proj_home=proj_home,
                                 level=self.config.get('LOGGING_LEVEL', 'INFO'),
                                 attach_stdout=self.config.get('LOG_STDOUT', False))
@@ -80,10 +82,10 @@ class Report(object):
                 'dlrecs':0, # number of records with data link(s)
                 'citnum':0, # total number of citations
                 'recent_citnum':0, # total number of recent citations
-                'reads':0, # total number of reads
-                'recent_reads':0, # total number of recent reads
-                'downloads':0, # total number of downloads
-                'recent_downloads':0, # total number of recent downloads
+                'reads':'NA', # total number of reads
+                'recent_reads':'NA', # total number of recent reads
+                'downloads':'NA', # total number of downloads
+                'recent_downloads':'NA', # total number of recent downloads
             }
         # Update statistics data structure with general publication information
         self._get_publication_data()
@@ -185,13 +187,13 @@ class FullTextReport(Report):
     Main engine for gathering and processing data to create
     the full text coverage report 
     """
-    def __init__(self):
+    def __init__(self, config={}):
         """
         Initializes the class and prepares a (temporary) lookup facility for
         curators reporting. This lookup facility will be replaced by an API
         query eventually
         """
-        super(FullTextReport, self).__init__()
+        super(FullTextReport, self).__init__(config=config)
         # ============================= AUGMENTATION of parent method ================================ #
         fulltext_links = self.config.get("CLASSIC_FULLTEXT_INDEX")
         # Compile a list of journals to generate the lookup facility for
@@ -304,11 +306,11 @@ class ReferenceMatchingReport(Report):
 	containing all the raw reference data; then the time has come
 	to revisit this reporting module.
     """
-    def __init__(self):
+    def __init__(self, config={}):
         """
         Initializes the class
         """
-        super(ReferenceMatchingReport, self).__init__()
+        super(ReferenceMatchingReport, self).__init__(config=config)
         #
     def make_report(self, collection, report_type):
         """
@@ -409,13 +411,13 @@ class SummaryReport(Report):
     """
     Create summary report for a specific target audience
     """
-    def __init__(self):
+    def __init__(self, config={}):
         """
         Initializes the class
         """
-        super(SummaryReport, self).__init__()
+        super(SummaryReport, self).__init__(config=config)
 
-    def make_report(self, collection, report_type, subject):
+    def make_report(self, collection, report_type):
         """
         param: collection: collection of publications to create report for
         param: report_type: specification of report type

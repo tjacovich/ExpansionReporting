@@ -1,0 +1,51 @@
+{
+    "facet_counts": {
+        "facet_fields": {
+            "year": [
+                "2019", 
+                3190, 
+                "2012", 
+                3118, 
+                "2017", 
+                3104, 
+                "2020", 
+                3079, 
+                "2015", 
+                3055, 
+                "2016", 
+                3038 
+            ]
+        }, 
+        "facet_heatmaps": {}, 
+        "facet_intervals": {}, 
+        "facet_queries": {}, 
+        "facet_ranges": {}
+    }, 
+    "response": {
+        "docs": [
+            {
+                "id": "19578662"
+            }
+        ], 
+        "numFound": 32446, 
+        "start": 0
+    }, 
+    "responseHeader": {
+        "QTime": 4, 
+        "params": {
+            "facet": "on", 
+            "facet.field": "year", 
+            "facet.limit": "1000", 
+            "facet.mincount": "1", 
+            "facet.offset": "0", 
+            "fl": "id", 
+            "internal_logging_params": "X-Amzn-Trace-Id=Root=1-62826b4c-0aebbc304462247940908155", 
+            "q": "bibstem:ApJ year:2010-2020", 
+            "rows": "1", 
+            "sort": "date desc", 
+            "start": "0", 
+            "wt": "json"
+        }, 
+        "status": 0
+    }
+}
