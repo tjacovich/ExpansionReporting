@@ -210,6 +210,9 @@ class FullTextReport(Report):
                 bibstem = bibcode[4:9]
                 if bibstem not in include:
                     continue
+                # Since we report per journal volume, we do not want tmp bibcodes
+                if bibcode[9:13].replace('.','') == 'tmp':
+                    continue
                 try:
                     volume  = int(bibcode[9:13].replace('.',''))
                 except:
