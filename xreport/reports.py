@@ -218,6 +218,8 @@ class FullTextReport(Report):
                 except:
                     self.logger.info("Processing Classic fulltext index. Cannot get volume for: {0}. Skipping...".format(bibcode))
                     continue
+                if bibstem in self.config.get("YEAR_IS_VOL"):
+                    volume = int(bibcode[0:4])
                 letter  = bibcode[13]
                 if bibstem == 'ApJ..' and letter == 'L':
                     bibstem = 'ApJL'
@@ -267,6 +269,8 @@ class FullTextReport(Report):
                     frac = 100*float(full_dict[volume])/float(self.statsdata[journal]['pubdata'][volume])
                 except:
                     frac = 0.0
+                if journal in self.config.get("YEAR_IS_VOL"):
+                    volume = volume - self.config.get("YEAR_IS_VOL")[journal] + 1
                 cov_dict[volume] = round(frac,1)
             # Update the global statistics data structure
             self.statsdata[journal]['general'] = cov_dict
@@ -297,6 +301,8 @@ class FullTextReport(Report):
                     frac = 100*float(len(sources))/float(self.statsdata[journal]['pubdata'][volume])
                 except:
                     frac = 0.0
+                if journal in self.config.get("YEAR_IS_VOL"):
+                    volume = volume - self.config.get("YEAR_IS_VOL")[journal] + 1
                 cov_dict[volume] = round(frac,1)
             self.statsdata[journal][ft_source] = cov_dict
 
@@ -357,6 +363,8 @@ class ReferenceMatchingReport(Report):
                     frac = 100*float(matched)/float(unmatched+matched)
                 except:
                     frac = 0.0
+                if journal in self.config.get("YEAR_IS_VOL"):
+                    volume = volume - self.config.get("YEAR_IS_VOL")[journal] + 1
                 cov_dict[volume] = round(frac,1)
             self.statsdata[journal][rtype] = cov_dict
 
