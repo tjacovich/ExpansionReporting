@@ -45,6 +45,33 @@ SOURCES = {
     'FULLTEXT': ['publisher','arxiv'],
     'REFERENCES': ['publisher', 'crossref']
 }
+# Column definitions for Summary Report
+SUMMARY_COLUMNS = {
+    "nrecs":"The current number of records in the collection being reported",
+    "ftrecs":"How many of these records have full text associated/indexed with them?",
+    "refrecs":"How many of these records are refereed?",
+    "oarecs":"How many of these records are Open Access?",
+    "dlrecs":"How many of these records have at least one data link?",
+    "citnum":"The current total number of citations for these records",
+    "recent_citnum":"How many citations have been added during the current year?",
+    "reads":"The amount of ADS reads for these records",
+    "recent_reads":"How many reads have been added during the current year?",
+    "downloads":"The amount of ADS downloads for these records",
+    "recent_downloads":"How many downloads have been added during the current year?"
+}
+# Row definitions for Summary Report
+SUMMARY_ROWS = {
+    "AST":"Core astronomy collection",
+    "HP":"Core heliophysics collection",
+    "PS":"Core Planetary Science collection",
+    "HP_AST":"Heliophysics content in main astronomy journals (filter: keyword:'sun*')",
+    "PS_AST":"Planetary Science content in main astronomy journals (filter: keyword:('planets*' OR meteor OR asteroid OR 'celestial*' OR 'solar system') -exoplanet -interstellar)",
+    "AST recent sample":"Core Astronomy collection including references and citations, filtered on entry date (entdate:[NOW-365DAYS TO *])",
+    "HP recent sample":"Core Heliophysics collection including references and citations, filtered on entry date (entdate:[NOW-365DAYS TO *])",
+    "HP_AST recent sample":"Heliophysics in Main Astronomy collection including references and citations, filtered on entry date (entdate:[NOW-365DAYS TO *])",
+    "PS recent sample":"Core Planetary Science collection including references and citations, filtered on entry date (entdate:[NOW-365DAYS TO *])",
+    "PS_AST recent sample":"Planetary Science in Main Astronomy collection including references and citations, filtered on entry date (entdate:[NOW-365DAYS TO *])",
+}
 # For these collections we need to skip the calculation of usage
 # (because it would involve retrieving all bibcodes)
 SKIP_USAGE = ['HP_AST', 'PS_AST']

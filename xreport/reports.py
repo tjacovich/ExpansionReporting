@@ -466,6 +466,16 @@ class SummaryReport(Report):
             for collection in self.summarydata.keys() :
                 row = [collection] + [v for v in self.summarydata[collection].values()]
                 outputdata.append(row)
+            # Add the footer explaining the meaning of the columns and rows
+            outputdata.append([''])
+            # Columns
+            outputdata.append(['Columns'])
+            for colname, colmeaning in self.config['SUMMARY_COLUMNS'].items():
+                outputdata.append([colname, colmeaning])
+            outputdata.append(['Rowns'])
+            # Rows
+            for rowname, rowmeaning in self.config['SUMMARY_ROWS'].items():
+                outputdata.append([rowname, rowmeaning])
             output_frame = pd.DataFrame(outputdata)
             # Results are written to an Excel file with conditional formatting and first row and column frozen
             output_frame.style.to_excel(output_file, engine='openpyxl', index=False, header=False, freeze_panes=(1,1))
