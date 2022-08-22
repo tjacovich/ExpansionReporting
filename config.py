@@ -15,7 +15,7 @@ ADS_REFERENCE_DATA = "/references/resolved"
 # Collections we are reporting on
 COLLECTIONS = ['AST', 'HP', 'PS', 'HP_AST', 'PS_AST']
 # Report formats supported
-FORMATS = ['NASA', 'CURATORS', 'SUMMARY']
+FORMATS = ['NASA', 'CURATORS', 'MISSING']
 # Report types supported
 SUBJECTS = ['FULLTEXT', 'REFERENCES', 'SUMMARY']
 # Which journals are we reporting on per collection
