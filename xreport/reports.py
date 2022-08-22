@@ -154,7 +154,7 @@ class Report(object):
         param: subject: specification of type data to create report for
         """
         # Where will the report(s) be written to
-        outdir = "{0}/{1}".format(self.config['OUTPUT_DIRECTORY'], report_type)
+        outdir = "{0}/{1}/{2}".format(self.config['OUTPUT_DIRECTORY'], report_type, subject)
         # Make sure the directory exists
         if not os.path.exists(outdir):
             os.mkdir(outdir)
