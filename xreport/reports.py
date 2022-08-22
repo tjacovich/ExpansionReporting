@@ -304,7 +304,7 @@ class FullTextReport(Report):
         for journal in self.journals:
             # The ADS query to retrieve all records with full text for a given journal
             # The entry date filter is to allow for a lag in the indexing of full text
-            query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-30DAYS]'.format(journal)
+            query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-30DAYS] doctype:article'.format(journal)
             # The query populates a dictionary keyed on volume number, listing the number of records per volume
             full_dict = _get_facet_data(self.config, query, 'volume')
             # Coverage data is stored in a dictionary
@@ -358,7 +358,7 @@ class FullTextReport(Report):
         for journal in self.journals:
             # The ADS query to retrieve all records without full text for a given journal
             # Additional filter: records entered up to one month from now
-            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-30DAYS]'.format(journal)
+            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-30DAYS] doctype:article'.format(journal)
             missing_pubs = _get_records(self.config, query, 'bibcode,doi,title,first_author_norm,volume,issue')
             self.missing[journal] = missing_pubs
 
