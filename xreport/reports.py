@@ -87,6 +87,10 @@ class Report(object):
                 'downloads':'NA', # total number of downloads
                 'recent_downloads':'NA', # total number of recent downloads
             }
+        # Initialize details data structure (reporting of missing publications)
+        self.missing = {}
+        for journal in self.journals:
+            self.missing[journal] = []
         # Update statistics data structure with general publication information
         self._get_publication_data()
 
@@ -141,6 +145,44 @@ class Report(object):
                     output_frame = pd.DataFrame(outputdata)
                     output_frame.style.applymap(self._highlight_cells).to_excel(output_file, engine='openpyxl', index=False, header=False, freeze_panes=(1,1))
     #
+    def save_missing(self, collection, report_type, subject):
+        """
+        Save publication data for publications that are missing for a specific collection and subject
+
+        param: collection: collection of publications to create report for
+        param: report_type: specification of report type
+        param: subject: specification of type data to create report for
+        """
+        # Where will the report(s) be written to
+        outdir = "{0}/{1}".format(self.config['OUTPUT_DIRECTORY'], report_type)
+        # Make sure the directory exists
+        if not os.path.exists(outdir):
+            os.mkdir(outdir)
+        # Transform the data generated in the make_report method:
+        # generate a data structure so that we can create a Pandas frame
+        header = []
+        # Add header rows
+        header.append(['bibcode','DOI','volume','issue','first author','title'])
+        for journal in self.journals:
+            if len((self.missing[journal])) == 0:
+                continue
+            # Generate the name of the output file, including full path
+            output_file = "{0}/{1}_{2}_{3}.xlsx".format(outdir, subject.lower(), journal.replace('.','').strip(), self.dstring)
+            outputdata = []
+            outputdata += header
+            for entry in self.missing[journal]:
+                row = []
+                row.append(entry.get('bibcode','NA'))
+                row.append(entry.get('doi',['NA'])[0])
+                row.append(entry.get('volume','NA'))
+                row.append(entry.get('issue','NA'))
+                row.append(entry.get('first_author_norm','NA'))
+                row.append(entry.get('title',['NA'])[0])
+                outputdata.append(row)
+            if outputdata:
+                output_frame = pd.DataFrame(outputdata)
+                output_frame.to_excel(output_file, engine='openpyxl', index=False, header=False)
+
     def _get_publication_data(self):
         """
         For a set of journals, get some basic publication data
@@ -238,9 +280,11 @@ class FullTextReport(Report):
         # for external reporting only the fact that there is full text is reported.
         if report_type == "NASA":
             self._get_fulltext_data_general()
-        else:
+        elif report_type == "CURATORS":
             self._get_fulltext_data_classic('publisher')
             self._get_fulltext_data_classic('arxiv')
+        else:
+            self._get_missing_publications()
 
     def save_report(self, collection, report_type, subject):
         """
@@ -306,6 +350,18 @@ class FullTextReport(Report):
                 cov_dict[volume] = round(frac,1)
             self.statsdata[journal][ft_source] = cov_dict
 
+    def _get_missing_publications(self):
+        """
+        For a set of journals, find the publications without fulltext
+        """
+#        for journal in self.journals:
+        for journal in ['SpWea']:
+            # The ADS query to retrieve all records without full text for a given journal
+            # Additional filter: records entered up to one month from now
+            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *]  entdate:[* TO NOW-30DAYS]'.format(journal)
+            missing_pubs = _get_records(self.config, query, 'bibcode,doi,title,first_author_norm,volume,issue')
+            self.missing[journal] = missing_pubs
+
 class ReferenceMatchingReport(Report):
     """
     Main engine for gathering and processing data to create
@@ -331,9 +387,11 @@ class ReferenceMatchingReport(Report):
         # Different report types result in different reports.
         if report_type == "NASA":
             self._get_reference_data('general')
-        else:
+        elif report_type == "CURATORS":
             self._get_reference_data('publisher')
             self._get_reference_data('crossref')
+        else:
+            sys.stderr.write('Report type {0} is currently not available for references\n'.format(report_type))
 
     def save_report(self, collection, report_type, subject):
         """
