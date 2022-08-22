@@ -355,8 +355,7 @@ class FullTextReport(Report):
         """
         For a set of journals, find the publications without fulltext
         """
-#        for journal in self.journals:
-        for journal in ['SpWea']:
+        for journal in self.journals:
             # The ADS query to retrieve all records without full text for a given journal
             # Additional filter: records entered up to one month from now
             query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-30DAYS]'.format(journal)
