@@ -8,6 +8,7 @@ from xreport.utils import _get_usage
 from xreport.utils import _get_records
 from datetime import datetime
 from datetime import date
+from operator import itemgetter
 
 class Report(object):
     """
@@ -154,10 +155,10 @@ class Report(object):
         param: subject: specification of type data to create report for
         """
         # Where will the report(s) be written to
-        outdir = "{0}/{1}/{2}".format(self.config['OUTPUT_DIRECTORY'], report_type, subject)
+        outdir = "{0}/{1}/{2}/{3}".format(self.config['OUTPUT_DIRECTORY'], report_type, subject, collection)
         # Make sure the directory exists
         if not os.path.exists(outdir):
-            os.mkdir(outdir)
+            os.makedirs(outdir, exist_ok=True)
         # Transform the data generated in the make_report method:
         # generate a data structure so that we can create a Pandas frame
         header = []
@@ -170,7 +171,8 @@ class Report(object):
             output_file = "{0}/{1}_{2}_{3}.xlsx".format(outdir, subject.lower(), journal.replace('.','').strip(), self.dstring)
             outputdata = []
             outputdata += header
-            for entry in self.missing[journal]:
+            entries = sorted(self.missing[journal], key=lambda x: int(itemgetter('volume')(x)))
+            for entry in entries:
                 row = []
                 row.append(entry.get('bibcode','NA'))
                 row.append(entry.get('doi',['NA'])[0])
@@ -304,7 +306,7 @@ class FullTextReport(Report):
         for journal in self.journals:
             # The ADS query to retrieve all records with full text for a given journal
             # The entry date filter is to allow for a lag in the indexing of full text
-            query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-30DAYS] doctype:article author_count:[1 TO *]'.format(journal)
+            query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-40DAYS] doctype:article author_count:[1 TO *]'.format(journal)
             # The query populates a dictionary keyed on volume number, listing the number of records per volume
             full_dict = _get_facet_data(self.config, query, 'volume')
             # Coverage data is stored in a dictionary
@@ -358,7 +360,7 @@ class FullTextReport(Report):
         for journal in self.journals:
             # The ADS query to retrieve all records without full text for a given journal
             # Additional filter: records entered up to one month from now
-            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-30DAYS] doctype:article author_count:[1 TO *]'.format(journal)
+            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-40DAYS] doctype:article author_count:[1 TO *]'.format(journal)
             missing_pubs = _get_records(self.config, query, 'bibcode,doi,title,first_author_norm,volume,issue')
             self.missing[journal] = missing_pubs
 
