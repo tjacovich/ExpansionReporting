@@ -171,7 +171,10 @@ class Report(object):
             output_file = "{0}/{1}_{2}_{3}.xlsx".format(outdir, subject.lower(), journal.replace('.','').strip(), self.dstring)
             outputdata = []
             outputdata += header
-            entries = sorted(self.missing[journal], key=lambda x: int(itemgetter('volume')(x)))
+            try:
+                entries = sorted(self.missing[journal], key=lambda x: int(itemgetter('volume')(x)))
+            except:
+                entries = self.missing[journal]
             for entry in entries:
                 row = []
                 row.append(entry.get('bibcode','NA'))
