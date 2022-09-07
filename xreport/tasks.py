@@ -37,7 +37,7 @@ def create_report(**args):
             if report_format == 'MISSING':
                 ftreport.save_missing(collection, report_format, subject)
             else:
-                ftreport.save_details(collection, report_format, subject)
+                ftreport.save_report(collection, report_format, subject)
         except Exception as err:
             msg = "Error saving full text report for collection '{0}' in format '{1}': {2}".format(collection, report_format, err)
             logger.error(msg)

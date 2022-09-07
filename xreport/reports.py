@@ -309,7 +309,10 @@ class FullTextReport(Report):
         for journal in self.journals:
             # The ADS query to retrieve all records with full text for a given journal
             # The entry date filter is to allow for a lag in the indexing of full text
-            query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-40DAYS] doctype:article author_count:[1 TO *]'.format(journal)
+            # query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-40DAYS] doctype:article author_count:[1 TO *]'.format(journal)
+            # The entry date filter is abandoned for now: many SoPh records were reloaded and as a result were filtered out, giving the impression of
+            # lots of missing fulltext for old content, while this is not true
+            query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] doctype:article author_count:[1 TO *]'.format(journal)
             # The query populates a dictionary keyed on volume number, listing the number of records per volume
             full_dict = _get_facet_data(self.config, query, 'volume')
             # Coverage data is stored in a dictionary
