@@ -195,7 +195,7 @@ class Report(object):
         """
         for journal in self.journals:
             # First get the number of records per volume
-            query = 'bibstem:"{0}"'.format(journal)
+            query = 'bibstem:"{0}" doctype:article'.format(journal)
             # Get the data using a facet query
             art_dict = _get_facet_data(self.config, query, 'volume')
             # Also, get the number of records per year
