@@ -27,6 +27,24 @@ def _group(lst, n):
         if len(val) == n:
             yield tuple(val)
 
+def _string2list(numstr):
+    """
+    Convert a string of numbers into a list/range
+    Example: '1,2,5-7,10' --> [1, 2, 5, 6, 7, 10]
+    
+    param: str: the input string
+    """
+    result = []
+    for part in numstr.split(','):
+        if '-' in part:
+            a, b = part.split('-')
+            a, b = int(a), int(b)
+            result.extend(range(a, b + 1))
+        else:
+            a = int(part)
+            result.append(a)
+    return result
+
 def _make_dict(tup, key_is_int=True):
     """
     Turn list of tuples into a dictionary

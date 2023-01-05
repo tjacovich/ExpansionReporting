@@ -6,6 +6,7 @@ from xreport.utils import _get_facet_data
 from xreport.utils import _get_citations
 from xreport.utils import _get_usage
 from xreport.utils import _get_records
+from xreport.utils import _string2list
 from datetime import datetime
 from datetime import date
 from operator import itemgetter
@@ -94,6 +95,9 @@ class Report(object):
             self.missing[journal] = []
         # Update statistics data structure with general publication information
         self._get_publication_data()
+        # Record all journals/volumes for which full text, references or metadata coverage
+        # needs to be skipped
+        self._get_skip_volumes()
 
     def save_report(self, collection, report_type, subject):
         """
@@ -211,6 +215,36 @@ class Report(object):
             # for normalization
             self.statsdata[journal]['pubdata'] = art_dict
     #
+    def _get_skip_volumes(self):
+        """
+        For full text, references and metadata, check the config for
+        volumes that need to be skipped in coverage reporting
+        """
+        # Determine all volumes for which we need to skip full text coverage reporting
+        self.skip_fulltext = {}
+        try:
+            no_fulltext = self.config['NO_FULLTEXT']
+            for jrnl in no_fulltext.keys():
+                self.skip_fulltext[jrnl] = _string2list(no_fulltext.get(jrnl,'0'))
+        except:
+            pass
+        # Determine all volumes for which we need to skip reference match reporting
+        self.skip_references = {}
+        try:
+            no_fulltext = self.config['NO_REFERENCES']
+            for jrnl in no_fulltext.keys():
+                self.skip_fulltext[jrnl] = _string2list(no_fulltext.get(jrnl,'0'))
+        except:
+            pass
+        # Determine all volumes for which we need to skip metadata coverage reporting
+        self.skip_metadata = {}
+        try:
+            no_fulltext = self.config['NO_METADATA']
+            for jrnl in no_fulltext.keys():
+                self.skip_fulltext[jrnl] = _string2list(no_fulltext.get(jrnl,'0'))
+        except:
+            pass
+        
     def _highlight_cells(self, val):
         """
         Mapping function for use in Pandas to apply conditional cell coloring
@@ -306,6 +340,7 @@ class FullTextReport(Report):
         For a set of journals, get full text data (the number of records with full text per volume)
 
         """
+        # Determine if certain volumes need to be skipped:
         for journal in self.journals:
             # The ADS query to retrieve all records with full text for a given journal
             # Filters:
@@ -318,7 +353,14 @@ class FullTextReport(Report):
             full_dict = _get_facet_data(self.config, query, 'volume')
             # Coverage data is stored in a dictionary
             cov_dict = {}
+            # Collect volumes to be skipped, if any
+            try:
+                skip = self.skip_fulltext[journal]
+            except:
+                skip = []
             for volume in sorted(self.statsdata[journal]['pubdata'].keys()):
+                if volume in skip:
+                    continue
                 try:
                     frac = 100*float(full_dict[volume])/float(self.statsdata[journal]['pubdata'][volume])
                 except:
@@ -339,7 +381,14 @@ class FullTextReport(Report):
         for journal in self.journals:
             # Coverage data is stored in a dictionary
             cov_dict = {}
+            # Collect volumes to be skipped, if any
+            try:
+                skip = self.skip_fulltext[journal]
+            except:
+                skip = []
             for volume in sorted(self.statsdata[journal]['pubdata'].keys()):
+                if volume in skip:
+                    continue
                 # For each volume of the journals in the collection we query the Pandas dataframe to retrieve the sources of full text
                 if ft_source == 'arxiv':
                     # How many records are there with full text from arXiv?
@@ -366,8 +415,7 @@ class FullTextReport(Report):
         """
         for journal in self.journals:
             # The ADS query to retrieve all records without full text for a given journal
-            # Additional filter: records entered up to one month from now
-            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] entdate:[* TO NOW-40DAYS] doctype:article'.format(journal)
+            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] doctype:article'.format(journal)
             missing_pubs = _get_records(self.config, query, 'bibcode,doi,title,first_author_norm,volume,issue')
             self.missing[journal] = missing_pubs
 
