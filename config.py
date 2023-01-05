@@ -10,22 +10,35 @@ CLASSIC_USAGE_INDEX = {
     'downloads':'/tmp/downloads.links'
 }
 ADS_REFERENCE_DATA = "/references/resolved"
+# The root of the output location
+OUTPUT_DIRECTORY = '/tmp/reports'
 # ============================= APPLICATION ==================================== #
 # 
 # Collections we are reporting on
-COLLECTIONS = ['AST', 'HP', 'PS', 'HP_AST', 'PS_AST']
+COLLECTIONS = ['AST', 'HP', 'PS', 'HP_AST', 'PS_AST', 'CORE']
 # Report formats supported
 FORMATS = ['NASA', 'CURATORS', 'MISSING']
 # Report types supported
 SUBJECTS = ['FULLTEXT', 'REFERENCES', 'SUMMARY']
 # Which journals are we reporting on per collection
 JOURNALS = {
-    'AST': ["ApJ..","ApJL","ApJS.","AJ...","MNRAS","A&A..","A&AS.","PASP.","AN...","PhRvD","JCAP.","APh..","CQGra"],
-    'PS': ["AREPS","ASTRA","AdSpR","AnGeo","Ap&SS","AsBio","CeMDA","E&PSL","EM&P.","GeCoA","IJAsB","Icar.","JAtS.","JGRA.","JGRD.",
-              "JGRE.","M&PS.","M&PSA","Metic","NatGe","P&SS.","PEPI.","RvGeo","SSRv.","SoSyR","SoPh.","SpWea","PSJ..","Moon.","SpPol"],
-    'HP': ['SoPh.','SpWea'],
-    'HP_AST': ["ApJ..","ApJL","ApJS.","AJ...","MNRAS","A&A..","A&AS."],
-    'PS_AST': ["ApJ..","ApJL","ApJS.","AJ...","MNRAS","A&A..","A&AS."]
+    'AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS","PASP","AN","PhRvD","JCAP","APh","CQGra", "ARA&A"],
+    'PS': ["AREPS","ASTRA","AdSpR","AnGeo","Ap&SS","AsBio","CeMDA","E&PSL","EM&P","GeCoA","IJAsB","Icar","JAtS",
+           "JGRA","JGRD","JGRE","M&PS","M&PSA","Metic","NatGe","P&SS","PEPI","RvGeo","SSRv","SoSyR","SoPh",
+           "SpWea","PSJ","Moon","SpPol"],
+    'HP': ['SoPh','SpWea'],
+    'CORE': ['A&A', 'A&AS', 'A&C', 'AJ', 'AN', 'APh', 'ARA&A', 'AREPS', 'ARep', 'ASTRA', 'AcA', 'AdSpR', 'AmJPh', 
+             'AnGeo', 'AnPhy', 'Ap&SS', 'ApJ', 'ApJL', 'ApJS', 'AsBio', 'AstBu', 'AstL', 'CQGra', 'CaJPh', 'CeMDA', 
+             'ChJPh', 'ChPhC', 'CoPhC', 'CoSka', 'CoTPh', 'CosRe', 'E&PSL', 'E&SS', 'EL', 'EM&P', 'EPJD', 'EPJP', 
+             'EPJST', 'ExA', 'FoPh', 'FrASS', 'FrP', 'GApFD', 'GReGr', 'Galax', 'GeCoA', 'GrCo', 'IJAsB', 'IJGMM', 
+             'IJMPA', 'IJMPD', 'IJMPE', 'Icar', 'InJPh', 'JAI', 'JApA', 'JAtS', 'JCAP', 'JChPh', 'JETP', 'JFM', 
+             'JGRA', 'JGRD', 'JGRE', 'JHEAp', 'JHEP', 'JKAS', 'JKPS', 'JMoSp', 'JPhG', 'JPlPh', 'JSWSC', 'M&PS', 
+             'M&PSA', 'MNRAS', 'MPLA', 'Metic', 'Moon', 'NIMPA', 'NJPh', 'NatAs', 'NatGe', 'Natur', 'NewA', 'NewAR', 
+             'NuPhA', 'NuPhB', 'P&SS', 'PAN', 'PASA', 'PASJ', 'PASP', 'PCCP', 'PDU', 'PEPI', 'PPCF', 'PSJ', 'PTEP',  
+             'PhFl', 'PhLB', 'PhPl', 'PhR', 'PhRvC', 'PhRvD', 'PhRvE', 'PhRvF', 'PhRvL', 'PhyS', 'Prama', 'RAA', 'RMxAA', 
+             'RScI', 'RaSc', 'RvGeo', 'RvMP', 'SSRv', 'Sci', 'ScPP', 'SoPh', 'SoSyR', 'SpPol', 'SpWea'],
+    'HP_AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS"],
+    'PS_AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS"]
 }
 # For some collection we define filters (to e.g. get the right content from multidisciplinary journals)
 COLLECTION_FILTERS = {
@@ -79,6 +92,12 @@ SKIP_USAGE = ['HP_AST', 'PS_AST']
 YEAR_IS_VOL = {
     'JCAP.':2003
 }
-# The root of the output location
-OUTPUT_DIRECTORY = '/tmp/reports'
+# Specification of volume ranges where coverage should not be calculated
+# Example: for some volumes there will be no full text (the publisher does not have it
+#          and the ADS will not digitize)
+NO_FULLTEXT = {
+    'AnGeo': '1-13',
+    'SoSyR': '1-36',
+    'SoPh.': '101',
+}
 
