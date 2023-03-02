@@ -199,7 +199,7 @@ class Report(object):
         """
         for journal in self.journals:
             # First get the number of records per volume
-            query = 'bibstem:"{0}" doctype:article'.format(journal)
+            query = 'bibstem:"{0}" doctype:(article OR inproceedings)'.format(journal)
             # Get the data using a facet query
             art_dict = _get_facet_data(self.config, query, 'volume')
             # Also, get the number of records per year
@@ -348,7 +348,7 @@ class FullTextReport(Report):
             # doctype:article --> remove all records indexed as non-articles
             # author_count:[1 TO *] --> not a good idea (because some historical publications don't have an author)
             # entdate:[* TO NOW-40DAYS] --> not a good idea in case records get re-indexed
-            query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] doctype:article'.format(journal)
+            query = 'bibstem:"{0}" fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] doctype:(article OR inproceedings)'.format(journal)
             # The query populates a dictionary keyed on volume number, listing the number of records per volume
             full_dict = _get_facet_data(self.config, query, 'volume')
             # Coverage data is stored in a dictionary
@@ -415,7 +415,7 @@ class FullTextReport(Report):
         """
         for journal in self.journals:
             # The ADS query to retrieve all records without full text for a given journal
-            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] doctype:article'.format(journal)
+            query = 'bibstem:"{0}"  -fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] doctype:(article OR inproceedings)'.format(journal)
             missing_pubs = _get_records(self.config, query, 'bibcode,doi,title,first_author_norm,volume,issue')
             self.missing[journal] = missing_pubs
 
@@ -471,7 +471,10 @@ class ReferenceMatchingReport(Report):
             matched = unmatched = 0
             # For each volume of the journals in the collection we retrieve that reference matching level
             for volume in sorted(self.statsdata[journal]['pubdata'].keys()):
-                ok, fail = self._process_one_volume(journal, volume, rtype)
+                try:
+                    ok, fail = self._process_one_volume(journal, volume, rtype)
+                except:
+                    ok = fail = 0
                 matched += ok
                 unmatched += fail
                 try:
@@ -523,11 +526,13 @@ class ReferenceMatchingReport(Report):
         for resfile in resfiles:
             with open(resfile) as refdata:
                 for line in refdata:
-                        if not line.strip():
+                        try:
+                            score = str(line.strip()[0])
+                        except:
                             continue
-                        if line.strip()[0] in ['0','5']:
+                        if score in ['0','5']:
                             fail += 1
-                        elif line.strip()[0] == '1':
+                        elif score == '1':
                             ok += 1
                         else:
                             continue
@@ -603,10 +608,12 @@ class SummaryReport(Report):
         """
         today = date.today()
         for collection in self.config['COLLECTIONS']:
+            if collection == 'CORE':
+                continue
             # Retrieve the journals for the collection being processed
             journals = self.config['JOURNALS'][collection]
             # Construct the query to retrieve all records for these journals
-            query = 'bibstem:({0})'.format(" OR ".join(journals))
+            query = 'bibstem:({0}) doctype:(article OR inproceedings)'.format(" OR ".join(journals))
             # Do we have an special filter for this collection?
             cfilter = self.config['COLLECTION_FILTERS'].get(collection, None)
             if cfilter:
@@ -630,25 +637,25 @@ class SummaryReport(Report):
             results = _get_facet_data(self.config, query, 'year')
             self.summarydata[collection]['nrecs'] = sum(results.values())
             # How many of these records have full text associated with them
-            query = 'bibstem:({0}) fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *]'.format(" OR ".join(journals))
+            query = 'bibstem:({0}) fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] doctype:(article OR inproceedings)'.format(" OR ".join(journals))
             if cfilter:
                 query += " {0}".format(cfilter)
             results = _get_facet_data(self.config, query, 'year')
             self.summarydata[collection]['ftrecs'] = sum(results.values())
             # How many of these records are Open Access
-            query = 'bibstem:({0}) property:openaccess'.format(" OR ".join(journals))
+            query = 'bibstem:({0}) property:openaccess doctype:(article OR inproceedings)'.format(" OR ".join(journals))
             if cfilter:
                 query += " {0}".format(cfilter)
             results = _get_facet_data(self.config, query, 'year')
             self.summarydata[collection]['oarecs'] = sum(results.values())
             # How many of these records have at least one data link
-            query = 'bibstem:({0}) property:data'.format(" OR ".join(journals))
+            query = 'bibstem:({0}) property:data doctype:(article OR inproceedings)'.format(" OR ".join(journals))
             if cfilter:
                 query += " {0}".format(cfilter)
             results = _get_facet_data(self.config, query, 'year')
             self.summarydata[collection]['dlrecs'] = sum(results.values())
             # How many of these records are refereed
-            query = 'bibstem:({0}) property:refereed'.format(" OR ".join(journals))
+            query = 'bibstem:({0}) property:refereed doctype:(article OR inproceedings)'.format(" OR ".join(journals))
             if cfilter:
                 query += " {0}".format(cfilter)
             results = _get_facet_data(self.config, query, 'year')
@@ -659,7 +666,7 @@ class SummaryReport(Report):
             # journals
             journals = self.config['JOURNALS'][collection]
             label = "{0} recent sample".format(collection)
-            jq = 'bibstem:({0})'.format(" OR ".join(journals))
+            jq = 'bibstem:({0}) doctype:(article OR inproceedings)'.format(" OR ".join(journals))
             # Do we have an special filter for this collection?
             cfilter = self.config['COLLECTION_FILTERS'].get(collection, None)
             if cfilter:
@@ -683,18 +690,18 @@ class SummaryReport(Report):
             results = _get_facet_data(self.config, query, 'year')
             self.summarydata[label]['nrecs'] = sum(results.values())
             # How many of these records have full text associated with them
-            q = '{0} fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *]'.format(query)
+            q = '{0} fulltext_mtime:["1000-01-01t00:00:00.000Z" TO *] doctype:(article OR inproceedings)'.format(query)
             results = _get_facet_data(self.config, q, 'year')
             self.summarydata[label]['ftrecs'] = sum(results.values())
             # How many of these records are Open Access
-            q = '{0} property:openaccess'.format(query)
+            q = '{0} property:openaccess doctype:(article OR inproceedings)'.format(query)
             results = _get_facet_data(self.config, q, 'year')
             self.summarydata[label]['oarecs'] = sum(results.values())
             # How many of these records have at least one data link
-            q = '{0} property:data'.format(query)
+            q = '{0} property:data doctype:(article OR inproceedings)'.format(query)
             results = _get_facet_data(self.config, q, 'year')
             self.summarydata[label]['dlrecs'] = sum(results.values())
             # How many of these records are refereed
-            q = '{0} property:refereed'.format(query)
+            q = '{0} property:refereed doctype:(article OR inproceedings)'.format(query)
             results = _get_facet_data(self.config, q, 'year')
             self.summarydata[label]['refrecs'] = sum(results.values())
