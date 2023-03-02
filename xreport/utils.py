@@ -139,7 +139,15 @@ def _get_facet_data(conf, query_string, facet):
     data = _do_query(conf, params)
     results = data['facet_counts']['facet_fields'].get(facet)
     # Return a dictionary with facet values and associated frequencies
-    return _make_dict(list(_group(results, 2)))
+    res_dict = _make_dict(list(_group(results, 2)))
+        if facet == 'volume':
+            try:
+                filt_dict = {key:value for (key, value) in res_dict.items() if key < 2100}
+            except:
+                filt_dict = res_dict
+            return filt_dict
+        else:
+            return res_dict
 
 def _get_records(conf, query_string, return_fields):
     """

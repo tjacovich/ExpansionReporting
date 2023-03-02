@@ -22,21 +22,26 @@ FORMATS = ['NASA', 'CURATORS', 'MISSING']
 SUBJECTS = ['FULLTEXT', 'REFERENCES', 'SUMMARY']
 # Which journals are we reporting on per collection
 JOURNALS = {
-    'AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS","PASP","AN","PhRvD","JCAP","APh","CQGra", "ARA&A"],
+    'AST': ['A&A','A&ARv','A&AS','AJ','AN','APh','ApJ','ApJL','ApJS','ARA&A','ARep','AsBio','AstL','CeMDA','FrASS','Galax','GeCoA','IAUS','IJAsB','JCAP','MNRAS','NatAs','PASA','PASJ','PASP','RAA','RNAAS','SCPMA','Univ','ASPC'],
     'PS': ["AREPS","ASTRA","AdSpR","AnGeo","Ap&SS","AsBio","CeMDA","E&PSL","EM&P","GeCoA","IJAsB","Icar","JAtS",
            "JGRA","JGRD","JGRE","M&PS","M&PSA","Metic","NatGe","P&SS","PEPI","RvGeo","SSRv","SoSyR","SoPh",
            "SpWea","PSJ","Moon","SpPol"],
     'HP': ['SoPh','SpWea'],
-    'CORE': ['A&A', 'A&AS', 'A&C', 'AJ', 'AN', 'APh', 'ARA&A', 'AREPS', 'ARep', 'ASTRA', 'AcA', 'AdSpR', 'AmJPh', 
-             'AnGeo', 'AnPhy', 'Ap&SS', 'ApJ', 'ApJL', 'ApJS', 'AsBio', 'AstBu', 'AstL', 'CQGra', 'CaJPh', 'CeMDA', 
-             'ChJPh', 'ChPhC', 'CoPhC', 'CoSka', 'CoTPh', 'CosRe', 'E&PSL', 'E&SS', 'EL', 'EM&P', 'EPJD', 'EPJP', 
-             'EPJST', 'ExA', 'FoPh', 'FrASS', 'FrP', 'GApFD', 'GReGr', 'Galax', 'GeCoA', 'GrCo', 'IJAsB', 'IJGMM', 
-             'IJMPA', 'IJMPD', 'IJMPE', 'Icar', 'InJPh', 'JAI', 'JApA', 'JAtS', 'JCAP', 'JChPh', 'JETP', 'JFM', 
-             'JGRA', 'JGRD', 'JGRE', 'JHEAp', 'JHEP', 'JKAS', 'JKPS', 'JMoSp', 'JPhG', 'JPlPh', 'JSWSC', 'M&PS', 
-             'M&PSA', 'MNRAS', 'MPLA', 'Metic', 'Moon', 'NIMPA', 'NJPh', 'NatAs', 'NatGe', 'Natur', 'NewA', 'NewAR', 
-             'NuPhA', 'NuPhB', 'P&SS', 'PAN', 'PASA', 'PASJ', 'PASP', 'PCCP', 'PDU', 'PEPI', 'PPCF', 'PSJ', 'PTEP',  
-             'PhFl', 'PhLB', 'PhPl', 'PhR', 'PhRvC', 'PhRvD', 'PhRvE', 'PhRvF', 'PhRvL', 'PhyS', 'Prama', 'RAA', 'RMxAA', 
-             'RScI', 'RaSc', 'RvGeo', 'RvMP', 'SSRv', 'Sci', 'ScPP', 'SoPh', 'SoSyR', 'SpPol', 'SpWea'],
+    'CORE': ['A&A','A&ARv','A&AS','AJ','AN','APh','ApJ','ApJL','ApJS','ARA&A','ARep','AsBio','ASPC','AstL',
+    'CeMDA','FrASS','Galax','GeCoA','IAUS','IJAsB','JCAP','MNRAS','NatAs','PASA','PASJ','PASP','RAA','RNAAS',
+    'SCPMA','Univ','ApOpt','ARPC','Chaos','Entrp','FrCh','JBO','JEI','JInst','NaPho','NatCC','NatCh','NatEn',
+    'NatMa','NatNa','NatSR','NatSy','OExpr','OptEn','OptL','PCCP','PNAS','RScI','RSPTA','SciA','SPIE','NatCo',
+    'Natur','Sci','AGUA','AmMin','AMT','AnGeo','ARMS','AtmEn','Atmos','AtmRe','BGeo','ChGeo','Clim','E&PSL',
+    'EnGeo','EnST','ESRv','FrEaS','GeoJI','GeoRL','GGG','GMD','JAG','JASTP','JAtS','JGeod','JGRA','JGRB','JGRC',
+    'JGRD','JGRE','JGRF','JGRG','NatGe','PApGe','PEPS','QJRMS','RemS','RvGeo','ScTEn','Senso','Tecto','Tectp',
+    'EFM','ACP','AdSpR','Ap&SS','E&SS','EM&P','EP&S','ESC','ESSD','Icar','JSWSC','M&PS','Metic','Moon','P&SS',
+    'PEPI','PSJ','SoPh','SoSyR','SpPol','SpWea','SSRv','AREPS','AIPC','AnPhy','AnRMS','ApPhA','ApPhB','ApPhL',
+    'ApSS','ARCMP','ARNPS','ChPhC','ChPhL','CoPhC','CP','CPL','CQGra','EL','EPJA','EPJC','EPJD','EPJP','FlDyR',
+    'FoPh','FoPhL','FrMat','FrP','GReGr','IJMPA','IJMPB','IJMPC','IJMPD','IJMPE','JAP','JChPh','JCoPh','JFM',
+    'JHEP','JMoSp','JMoSt','JPCA','JPhA','JPhB','JPhD','JPhG','JPlPh','JQSRT','LRR','MPLA','MPLB','NatPh','NatRP',
+    'NIMPA','NIMPB','NJPh','NuPhA','NuPhB','Parti','PDU','PhFl','PhLA','PhLB','PhPl','PhR','PhRvA','PhRvB','PhRvC',
+    'PhRvD','PhRvE','PhRvF','PhRvL','PhRvP','PhRvR','PhRvX','PhyA','PhyB','PhyC','PPCF','PPN','PrPNP','PTEP','RPPh',
+    'RvMP','ScPP','SSCom','SurSc','SurSR'],
     'HP_AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS"],
     'PS_AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS"]
 }
@@ -90,7 +95,7 @@ SUMMARY_ROWS = {
 SKIP_USAGE = ['HP_AST', 'PS_AST']
 # For these publications (bibstem) the volume is treated as volume. This dictionary lists the start year
 YEAR_IS_VOL = {
-    'JCAP.':2003
+    'JCAP':2003
 }
 # Specification of volume ranges where coverage should not be calculated
 # Example: for some volumes there will be no full text (the publisher does not have it
@@ -98,6 +103,6 @@ YEAR_IS_VOL = {
 NO_FULLTEXT = {
     'AnGeo': '1-13',
     'SoSyR': '1-36',
-    'SoPh.': '101',
+    'SoPh': '101',
 }
 
