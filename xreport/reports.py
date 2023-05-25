@@ -206,11 +206,17 @@ class Report(object):
             year_dict = _get_facet_data(self.config, query, 'year')
             # Update journal statistics
             # The first and most recent publication years
-            self.statsdata[journal]['lastyear'] = max(year_dict.keys())
-            self.statsdata[journal]['startyear'] = min(year_dict.keys())
+            try:
+                self.statsdata[journal]['lastyear'] = max(year_dict.keys())
+                self.statsdata[journal]['startyear'] = min(year_dict.keys())
+            except:
+                continue
             # The first and most recent volumes
-            self.statsdata[journal]['lastvol'] = max(art_dict.keys())
-            self.statsdata[journal]['startvol'] = min(art_dict.keys())
+            try:
+                self.statsdata[journal]['lastvol'] = max(art_dict.keys())
+                self.statsdata[journal]['startvol'] = min(art_dict.keys())
+            except:
+                continue
             # The number of publications per volume, to be used later
             # for normalization
             self.statsdata[journal]['pubdata'] = art_dict

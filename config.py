@@ -15,7 +15,7 @@ OUTPUT_DIRECTORY = '/tmp/reports'
 # ============================= APPLICATION ==================================== #
 # 
 # Collections we are reporting on
-COLLECTIONS = ['AST', 'HP', 'PS', 'HP_AST', 'PS_AST', 'CORE']
+COLLECTIONS = ['AST', 'HP', 'PS', 'HP_AST', 'PS_AST', 'CORE', 'ES']
 # Report formats supported
 FORMATS = ['NASA', 'CURATORS', 'MISSING']
 # Report types supported
@@ -43,7 +43,8 @@ JOURNALS = {
     'PhRvD','PhRvE','PhRvF','PhRvL','PhRvP','PhRvR','PhRvX','PhyA','PhyB','PhyC','PPCF','PPN','PrPNP','PTEP','RPPh',
     'RvMP','ScPP','SSCom','SurSc','SurSR'],
     'HP_AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS"],
-    'PS_AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS"]
+    'PS_AST': ["ApJ","ApJL","ApJS","AJ","MNRAS","A&A","A&AS"],
+    'ES': ['AREPS', 'AmJS.', 'AmMin', 'ApGC.', 'AsBio', 'BAAPG', 'BCaPG', 'BVol.', 'Borea', 'BuSSA', 'CCM..', 'CG...', 'CaJES', 'CaMin', 'ChGeo', 'ClMin', 'CliPa', 'CoMP.', 'E&PSL', 'EEGeo', 'EJMin', 'EOSTr', 'ESPL.', 'ESRv.', 'Earth', 'EcGeo', 'Eleme', 'EnG', 'EnGeo', 'EngGe', 'ExMG', 'GBioC', 'GEEA', 'GGG', 'GGR', 'GPC..', 'GSAB.', 'GSASP', 'GSLSP', 'Gbio', 'GeCoA', 'Geo..', 'GeoJI', 'GeoM.', 'GeoRL', 'GeoRu', 'Geode', 'Geomo', 'Geop.', 'Geosp', 'GrWat', 'HESS', 'HyPr.', 'IGRv.', 'IJCG', 'IJEaS', 'IJRMM', 'Icar.', 'JCExp', 'JCHyd', 'JEEG', 'JForR', 'JG...', 'JGR..', 'JGRA', 'JGRB', 'JGRC', 'JGRD', 'JGRE', 'JGRF', 'JGRG', 'JGeEd', 'JHyd.', 'JMetG', 'JPal.', 'JPet.', 'JPetG', 'JQS..', 'JSG..', 'JSedR', 'JVGR.', 'JVPal', 'LeaEd', 'Litho', 'Lsphe', 'M&PS.', 'MGeol', 'MatGs', 'Micpl', 'MinDe', 'MinM.', 'NatGe', 'Natur', 'OrGeo', 'PApGe', 'PCM..', 'PEPI.', 'PGeo', 'PPP', 'PalAB', 'PalOc', 'Palai', 'Palgy', 'Paly', 'Pbio', 'PreR.', 'QJEGH', 'QuRes', 'RvGeo', 'RvMG.', 'SSASJ', 'Sci..', 'SedG.', 'Sedim', 'Tecto', 'Tectp', 'WRR..']
 }
 # For some collection we define filters (to e.g. get the right content from multidisciplinary journals)
 COLLECTION_FILTERS = {
