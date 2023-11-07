@@ -57,7 +57,7 @@ def _make_dict(tup, key_is_int=True):
         newtup = [(int(re.sub("[^0-9]", "", e[0])), e[1]) for e in tup]        
     return dict(newtup)
 
-def _do_query(conf, params):
+def _do_query(conf, params, endpoint='search/query'):
     """
     Send of a query to the ADS API (essentially, any API defined by config values)
     
@@ -67,7 +67,10 @@ def _do_query(conf, params):
     headers = {}
     headers["Authorization"] = "Bearer:{}".format(conf['ADS_API_TOKEN'])
     headers["Accept"] = "application/json"
-    url = "{}/search/query?{}".format(conf['ADS_API_URL'], urllib.parse.urlencode(params))
+    if isinstance(params, str):
+        url = "{}/{}/{}".format(conf['ADS_API_URL'], endpoint, params)
+    else:
+        url = "{}/{}?{}".format(conf['ADS_API_URL'], endpoint, urllib.parse.urlencode(params))
     r_json = {}
     try:
         r = requests.get(url, headers=headers)
@@ -207,3 +210,16 @@ def _get_usage(config, jrnls=[], bibcodes=[], udata='reads'):
            total += sum([int(d) for d in data[1:]])
            recent += int(data[-1])
     return total, recent
+
+def _get_journal_coverage(conf, jrnl):
+    """
+    Get metadata completeness statistics from Journals Database for a given journal
+    
+    param: conf: dictionary with configuration values
+    param: jrnl: a journal abbreviation (bibstem)
+    """
+
+    data = _do_query(conf, jrnl, endpoint='journals/summary')
+    
+    return data
+    

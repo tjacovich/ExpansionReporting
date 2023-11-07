@@ -6,6 +6,7 @@ from xreport.utils import _get_facet_data
 from xreport.utils import _get_citations
 from xreport.utils import _get_usage
 from xreport.utils import _get_records
+from xreport.utils import _get_journal_coverage
 from xreport.utils import _string2list
 from datetime import datetime
 from datetime import date
@@ -130,7 +131,12 @@ class Report(object):
             output_file = "{0}/{1}_{2}_{3}.xlsx".format(outdir, subject.lower(), collection, self.dstring)
             # Statistics are reported per volume for each journal in the collection
             for vol in range(1, maxvol+1):
-                row = [str(vol)] + [self.statsdata[j]['general'].get(vol,"") for j in self.journals]
+                row = [str(vol)]
+                for jrnl in self.journals:
+                    if vol in self.statsdata[jrnl]['general']:
+                        row.append(self.statsdata[jrnl]['general'][vol])
+                    else:
+                        row.append("")
                 outputdata.append(row)
             output_frame = pd.DataFrame(outputdata)
             # Results are written to an Excel file with conditional formatting and first row and column frozen
@@ -543,6 +549,66 @@ class ReferenceMatchingReport(Report):
                         else:
                             continue
         return [ok, fail]
+
+class MetaDataReport(Report):
+    """
+    Create metadata completeness report 
+    """
+    def __init__(self, config={}):
+        """
+        Initializes the class
+        """
+        super(MetaDataReport, self).__init__(config=config)
+
+    def make_report(self, collection, report_type):
+        """
+        param: collection: collection of publications to create report for
+        param: report_type: specification of report type
+        """
+        super(MetaDataReport, self).make_report(collection, report_type)
+        # ============================= AUGMENTATION of parent method ================================ #
+        self._get_metadata_data()
+
+    def save_report(self, collection, report_type, subject):
+        """
+        Save the data created in the make_report method in Excel format
+    
+        param: collection: collection of publications to create report for
+        param: report_type: specification of report type
+        param: subject: specification of type data to create report for
+        """
+        super(MetaDataReport, self).save_report(collection, report_type, subject)
+
+    def _get_metadata_data(self):
+        """
+        For a set of journals, get coverage data from the Journals Database
+
+        """
+        # Determine if certain volumes need to be skipped:
+        for journal in self.journals:
+            # The query populates a dictionary keyed on volume number, listing the number of records per volume
+            letter = False
+            if journal == 'ApJL':
+                cov_data = _get_journal_coverage(self.config, 'ApJ')
+                letter = True
+            else:
+                cov_data = _get_journal_coverage(self.config, journal)
+            cov_dict = {}
+            jdata = {}
+            try:
+                cdata = eval(cov_data['summary']['master'].get('completeness_details',[]))
+            except:
+                cdata = {}
+            # Get the completeness stats from the results
+            for entry in cdata:
+                jdata[entry['volume']] = round(100*entry['completeness_fraction'], 1)
+            for volume in sorted(self.statsdata[journal]['pubdata'].keys()):
+                if letter:
+                    cov_dict[volume] = jdata.get(str(volume)+"L",0)
+                else:
+                    cov_dict[volume] = jdata.get(str(volume),0)
+            # Coverage data is stored in a dictionary
+            self.statsdata[journal]['general'] = cov_dict
 
 class SummaryReport(Report):
     """

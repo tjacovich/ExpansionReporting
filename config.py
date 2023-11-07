@@ -19,7 +19,7 @@ COLLECTIONS = ['AST', 'HP', 'PS', 'HP_AST', 'PS_AST', 'CORE', 'ES']
 # Report formats supported
 FORMATS = ['NASA', 'CURATORS', 'MISSING']
 # Report types supported
-SUBJECTS = ['FULLTEXT', 'REFERENCES', 'SUMMARY']
+SUBJECTS = ['FULLTEXT', 'REFERENCES', 'SUMMARY', 'METADATA']
 # Which journals are we reporting on per collection
 JOURNALS = {
     'AST': ['A&A','A&ARv','A&AS','AJ','AN','APh','ApJ','ApJL','ApJS','ARA&A','ARep','AsBio','AstL','CeMDA','FrASS','Galax','GeCoA','IAUS','IJAsB','JCAP','MNRAS','NatAs','PASA','PASJ','PASP','RAA','RNAAS','SCPMA','Univ','ASPC'],
