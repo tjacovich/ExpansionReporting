@@ -10,6 +10,7 @@ CLASSIC_USAGE_INDEX = {
     'downloads':'/tmp/downloads.links'
 }
 ADS_REFERENCE_DATA = "/references/resolved"
+ADS_PUBLISHER_DATA = "/config/publisher_bibstem.dat"
 # The root of the output location
 OUTPUT_DIRECTORY = '/tmp/reports'
 # ============================= APPLICATION ==================================== #

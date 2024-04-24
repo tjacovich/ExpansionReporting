@@ -46,8 +46,11 @@ class Report(object):
             msg = "Unable to find journals for collection: {} (Exception: {})".format(collection, err)
             self.logger.error(msg)
             raise
-        # Initialize statistics data structure
+        # Get a map from bibstem to publisher
+        self._get_publishers()
+        # Initialize statistics and publisher data structure
         self.statsdata = {}
+        self.publisher = {}
         for journal in self.journals:
             self.statsdata[journal] = {
                 'pubdata':{},
@@ -60,6 +63,7 @@ class Report(object):
                 'publisher':{},
                 'crossref':{}
             }
+            self.publisher[journal] = self.stem2publisher.get(journal,'NA')
         # Initialize summary data structure
         self.summarydata = {}
         for collection in self.config['COLLECTIONS']:
@@ -118,6 +122,7 @@ class Report(object):
         header = []
         # Add header rows
         header.append(['jrnl ->'] + [j for j in self.journals])
+        header.append(['publisher ->'] + [self.publisher[j] for j in self.journals])
         header.append(['start year ->'] + [str(self.statsdata[j]['startyear']) for j in self.journals])
         header.append(['last year ->'] + [str(self.statsdata[j]['lastyear']) for j in self.journals])
         header.append(['start vol ->'] + [str(self.statsdata[j]['startvol']) for j in self.journals])
@@ -197,6 +202,19 @@ class Report(object):
             if outputdata:
                 output_frame = pd.DataFrame(outputdata)
                 output_frame.to_excel(output_file, engine='openpyxl', index=False, header=False)
+
+    def _get_publishers(self):
+        """
+        For a set of publishers, get their associated publisher
+        """
+        self.stem2publisher = {}
+        with open(self.config['ADS_PUBLISHER_DATA']) as fh:
+            for line in fh:
+                try:
+                    bibstem, pname = line.strip().split('\t')
+                except:
+                    continue
+                self.stem2publisher[bibstem.replace('.','')] = pname
 
     def _get_publication_data(self):
         """
